@@ -1,8 +1,14 @@
 {
   "models": [
     "random_forest",
+    "gradient_boosting",
     "decision_tree",
-    "linear_regression"
+    "linear_regression",
+    "ridge",
+    "lasso",
+    "elasticnet",
+    "svr",
+    "knn"
   ],
   "default_model": "random_forest",
   "feature_names": [

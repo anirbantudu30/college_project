@@ -5,10 +5,12 @@ Trains a Random Forest model on synthetic insurance data and saves it as a seria
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import joblib
@@ -197,6 +199,172 @@ print(f"    Train R²: {lr_train_score:.4f}, Test R²: {lr_test_score:.4f}")
 print(f"    Train RMSE: ${lr_train_rmse:.2f}, Test RMSE: ${lr_test_rmse:.2f}")
 print(f"    Train MAE: ${lr_train_mae:.2f}, Test MAE: ${lr_test_mae:.2f}")
 
+# 4. Gradient Boosting
+print("\n[4] Training Gradient Boosting...")
+gb_model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42)
+gb_model.fit(X_train, y_train)
+gb_train_pred = gb_model.predict(X_train)
+gb_test_pred = gb_model.predict(X_test)
+gb_train_score = r2_score(y_train, gb_train_pred)
+gb_test_score = r2_score(y_test, gb_test_pred)
+gb_train_rmse = np.sqrt(mean_squared_error(y_train, gb_train_pred))
+gb_test_rmse = np.sqrt(mean_squared_error(y_test, gb_test_pred))
+gb_train_mae = mean_absolute_error(y_train, gb_train_pred)
+gb_test_mae = mean_absolute_error(y_test, gb_test_pred)
+models['gradient_boosting'] = gb_model
+metrics['gradient_boosting'] = {
+    'train_r2': gb_train_score,
+    'test_r2': gb_test_score,
+    'train_rmse': gb_train_rmse,
+    'test_rmse': gb_test_rmse,
+    'train_mae': gb_train_mae,
+    'test_mae': gb_test_mae,
+    'test_predictions': gb_test_pred,
+    'train_predictions': gb_train_pred
+}
+print(f"    Train R²: {gb_train_score:.4f}, Test R²: {gb_test_score:.4f}")
+print(f"    Train RMSE: ${gb_train_rmse:.2f}, Test RMSE: ${gb_test_rmse:.2f}")
+print(f"    Train MAE: ${gb_train_mae:.2f}, Test MAE: ${gb_test_mae:.2f}")
+
+# 5. Support Vector Regressor (requires feature scaling)
+print("\n[5] Training Support Vector Regressor...")
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+svr_model = SVR(kernel='rbf', C=100, epsilon=0.1)
+svr_model.fit(X_train_scaled, y_train)
+svr_train_pred = svr_model.predict(X_train_scaled)
+svr_test_pred = svr_model.predict(X_test_scaled)
+svr_train_score = r2_score(y_train, svr_train_pred)
+svr_test_score = r2_score(y_test, svr_test_pred)
+svr_train_rmse = np.sqrt(mean_squared_error(y_train, svr_train_pred))
+svr_test_rmse = np.sqrt(mean_squared_error(y_test, svr_test_pred))
+svr_train_mae = mean_absolute_error(y_train, svr_train_pred)
+svr_test_mae = mean_absolute_error(y_test, svr_test_pred)
+models['svr'] = svr_model
+models['svr_scaler'] = scaler  # Save the scaler for SVR
+metrics['svr'] = {
+    'train_r2': svr_train_score,
+    'test_r2': svr_test_score,
+    'train_rmse': svr_train_rmse,
+    'test_rmse': svr_test_rmse,
+    'train_mae': svr_train_mae,
+    'test_mae': svr_test_mae,
+    'test_predictions': svr_test_pred,
+    'train_predictions': svr_train_pred
+}
+print(f"    Train R²: {svr_train_score:.4f}, Test R²: {svr_test_score:.4f}")
+print(f"    Train RMSE: ${svr_train_rmse:.2f}, Test RMSE: ${svr_test_rmse:.2f}")
+print(f"    Train MAE: ${svr_train_mae:.2f}, Test MAE: ${svr_test_mae:.2f}")
+
+# 6. K-Nearest Neighbors
+print("\n[6] Training K-Nearest Neighbors...")
+knn_model = KNeighborsRegressor(n_neighbors=5)
+knn_model.fit(X_train_scaled, y_train)  # Use scaled features
+knn_train_pred = knn_model.predict(X_train_scaled)
+knn_test_pred = knn_model.predict(X_test_scaled)
+knn_train_score = r2_score(y_train, knn_train_pred)
+knn_test_score = r2_score(y_test, knn_test_pred)
+knn_train_rmse = np.sqrt(mean_squared_error(y_train, knn_train_pred))
+knn_test_rmse = np.sqrt(mean_squared_error(y_test, knn_test_pred))
+knn_train_mae = mean_absolute_error(y_train, knn_train_pred)
+knn_test_mae = mean_absolute_error(y_test, knn_test_pred)
+models['knn'] = knn_model
+metrics['knn'] = {
+    'train_r2': knn_train_score,
+    'test_r2': knn_test_score,
+    'train_rmse': knn_train_rmse,
+    'test_rmse': knn_test_rmse,
+    'train_mae': knn_train_mae,
+    'test_mae': knn_test_mae,
+    'test_predictions': knn_test_pred,
+    'train_predictions': knn_train_pred
+}
+print(f"    Train R²: {knn_train_score:.4f}, Test R²: {knn_test_score:.4f}")
+print(f"    Train RMSE: ${knn_train_rmse:.2f}, Test RMSE: ${knn_test_rmse:.2f}")
+print(f"    Train MAE: ${knn_train_mae:.2f}, Test MAE: ${knn_test_mae:.2f}")
+
+# 7. Ridge Regression
+print("\n[7] Training Ridge Regression...")
+ridge_model = Ridge(alpha=1.0)
+ridge_model.fit(X_train, y_train)
+ridge_train_pred = ridge_model.predict(X_train)
+ridge_test_pred = ridge_model.predict(X_test)
+ridge_train_score = r2_score(y_train, ridge_train_pred)
+ridge_test_score = r2_score(y_test, ridge_test_pred)
+ridge_train_rmse = np.sqrt(mean_squared_error(y_train, ridge_train_pred))
+ridge_test_rmse = np.sqrt(mean_squared_error(y_test, ridge_test_pred))
+ridge_train_mae = mean_absolute_error(y_train, ridge_train_pred)
+ridge_test_mae = mean_absolute_error(y_test, ridge_test_pred)
+models['ridge'] = ridge_model
+metrics['ridge'] = {
+    'train_r2': ridge_train_score,
+    'test_r2': ridge_test_score,
+    'train_rmse': ridge_train_rmse,
+    'test_rmse': ridge_test_rmse,
+    'train_mae': ridge_train_mae,
+    'test_mae': ridge_test_mae,
+    'test_predictions': ridge_test_pred,
+    'train_predictions': ridge_train_pred
+}
+print(f"    Train R²: {ridge_train_score:.4f}, Test R²: {ridge_test_score:.4f}")
+print(f"    Train RMSE: ${ridge_train_rmse:.2f}, Test RMSE: ${ridge_test_rmse:.2f}")
+print(f"    Train MAE: ${ridge_train_mae:.2f}, Test MAE: ${ridge_test_mae:.2f}")
+
+# 8. Lasso Regression
+print("\n[8] Training Lasso Regression...")
+lasso_model = Lasso(alpha=10.0)
+lasso_model.fit(X_train, y_train)
+lasso_train_pred = lasso_model.predict(X_train)
+lasso_test_pred = lasso_model.predict(X_test)
+lasso_train_score = r2_score(y_train, lasso_train_pred)
+lasso_test_score = r2_score(y_test, lasso_test_pred)
+lasso_train_rmse = np.sqrt(mean_squared_error(y_train, lasso_train_pred))
+lasso_test_rmse = np.sqrt(mean_squared_error(y_test, lasso_test_pred))
+lasso_train_mae = mean_absolute_error(y_train, lasso_train_pred)
+lasso_test_mae = mean_absolute_error(y_test, lasso_test_pred)
+models['lasso'] = lasso_model
+metrics['lasso'] = {
+    'train_r2': lasso_train_score,
+    'test_r2': lasso_test_score,
+    'train_rmse': lasso_train_rmse,
+    'test_rmse': lasso_test_rmse,
+    'train_mae': lasso_train_mae,
+    'test_mae': lasso_test_mae,
+    'test_predictions': lasso_test_pred,
+    'train_predictions': lasso_train_pred
+}
+print(f"    Train R²: {lasso_train_score:.4f}, Test R²: {lasso_test_score:.4f}")
+print(f"    Train RMSE: ${lasso_train_rmse:.2f}, Test RMSE: ${lasso_test_rmse:.2f}")
+print(f"    Train MAE: ${lasso_train_mae:.2f}, Test MAE: ${lasso_test_mae:.2f}")
+
+# 9. Elastic Net
+print("\n[9] Training Elastic Net...")
+elasticnet_model = ElasticNet(alpha=1.0, l1_ratio=0.5)
+elasticnet_model.fit(X_train, y_train)
+elasticnet_train_pred = elasticnet_model.predict(X_train)
+elasticnet_test_pred = elasticnet_model.predict(X_test)
+elasticnet_train_score = r2_score(y_train, elasticnet_train_pred)
+elasticnet_test_score = r2_score(y_test, elasticnet_test_pred)
+elasticnet_train_rmse = np.sqrt(mean_squared_error(y_train, elasticnet_train_pred))
+elasticnet_test_rmse = np.sqrt(mean_squared_error(y_test, elasticnet_test_pred))
+elasticnet_train_mae = mean_absolute_error(y_train, elasticnet_train_pred)
+elasticnet_test_mae = mean_absolute_error(y_test, elasticnet_test_pred)
+models['elasticnet'] = elasticnet_model
+metrics['elasticnet'] = {
+    'train_r2': elasticnet_train_score,
+    'test_r2': elasticnet_test_score,
+    'train_rmse': elasticnet_train_rmse,
+    'test_rmse': elasticnet_test_rmse,
+    'train_mae': elasticnet_train_mae,
+    'test_mae': elasticnet_test_mae,
+    'test_predictions': elasticnet_test_pred,
+    'train_predictions': elasticnet_train_pred
+}
+print(f"    Train R²: {elasticnet_train_score:.4f}, Test R²: {elasticnet_test_score:.4f}")
+print(f"    Train RMSE: ${elasticnet_train_rmse:.2f}, Test RMSE: ${elasticnet_test_rmse:.2f}")
+print(f"    Train MAE: ${elasticnet_train_mae:.2f}, Test MAE: ${elasticnet_test_mae:.2f}")
+
 print("\n" + "="*60)
 print("Model Comparison")
 print("="*60)
@@ -377,6 +545,41 @@ lr_path = os.path.join(model_dir, 'insurance_model_linear_regression.pkl')
 joblib.dump(models['linear_regression'], lr_path)
 print(f"[+] Linear Regression saved to: {lr_path}")
 
+# Save Gradient Boosting
+gb_path = os.path.join(model_dir, 'insurance_model_gradient_boosting.pkl')
+joblib.dump(models['gradient_boosting'], gb_path)
+print(f"[+] Gradient Boosting saved to: {gb_path}")
+
+# Save Support Vector Regressor
+svr_path = os.path.join(model_dir, 'insurance_model_svr.pkl')
+joblib.dump(models['svr'], svr_path)
+print(f"[+] Support Vector Regressor saved to: {svr_path}")
+
+# Save SVR Scaler
+svr_scaler_path = os.path.join(model_dir, 'svr_scaler.pkl')
+joblib.dump(models['svr_scaler'], svr_scaler_path)
+print(f"[+] SVR Scaler saved to: {svr_scaler_path}")
+
+# Save K-Nearest Neighbors
+knn_path = os.path.join(model_dir, 'insurance_model_knn.pkl')
+joblib.dump(models['knn'], knn_path)
+print(f"[+] K-Nearest Neighbors saved to: {knn_path}")
+
+# Save Ridge Regression
+ridge_path = os.path.join(model_dir, 'insurance_model_ridge.pkl')
+joblib.dump(models['ridge'], ridge_path)
+print(f"[+] Ridge Regression saved to: {ridge_path}")
+
+# Save Lasso Regression
+lasso_path = os.path.join(model_dir, 'insurance_model_lasso.pkl')
+joblib.dump(models['lasso'], lasso_path)
+print(f"[+] Lasso Regression saved to: {lasso_path}")
+
+# Save Elastic Net
+elasticnet_path = os.path.join(model_dir, 'insurance_model_elasticnet.pkl')
+joblib.dump(models['elasticnet'], elasticnet_path)
+print(f"[+] Elastic Net saved to: {elasticnet_path}")
+
 # Save encoders
 le_gender_path = os.path.join(model_dir, 'label_encoder_gender.pkl')
 le_location_path = os.path.join(model_dir, 'label_encoder_location.pkl')
@@ -417,7 +620,7 @@ def convert_to_serializable(obj):
     return obj
 
 config = {
-    'models': ['random_forest', 'decision_tree', 'linear_regression'],
+    'models': ['random_forest', 'gradient_boosting', 'decision_tree', 'linear_regression', 'ridge', 'lasso', 'elasticnet', 'svr', 'knn'],
     'default_model': 'random_forest',
     'feature_names': ['age', 'gender_encoded', 'bmi', 'kids', 'smoker_int', 'location_encoded',
                       'income_encoded', 'employment_encoded', 'health_score', 'exercise_frequency',
@@ -425,8 +628,14 @@ config = {
     'encoders': ['gender', 'location', 'income', 'employment', 'education', 'marital'],
     'metrics': {
         'random_forest': convert_to_serializable(metrics['random_forest']),
+        'gradient_boosting': convert_to_serializable(metrics['gradient_boosting']),
         'decision_tree': convert_to_serializable(metrics['decision_tree']),
-        'linear_regression': convert_to_serializable(metrics['linear_regression'])
+        'linear_regression': convert_to_serializable(metrics['linear_regression']),
+        'ridge': convert_to_serializable(metrics['ridge']),
+        'lasso': convert_to_serializable(metrics['lasso']),
+        'elasticnet': convert_to_serializable(metrics['elasticnet']),
+        'svr': convert_to_serializable(metrics['svr']),
+        'knn': convert_to_serializable(metrics['knn'])
     },
     'training_samples': int(len(X_train)),
     'test_samples': int(len(X_test))

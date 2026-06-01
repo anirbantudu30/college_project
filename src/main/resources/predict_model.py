@@ -11,7 +11,8 @@ Usage:
   OR legacy positional format:
   python predict_model.py <age> <gender> <bmi> <kids> <smoker> <location> [--model <model_name>]
   
-Model options: random_forest, decision_tree, linear_regression
+Model options: random_forest, gradient_boosting, decision_tree, linear_regression, ridge, lasso, 
+               elasticnet, svr, knn
 
 Parameters:
   age: Integer (18-100)
@@ -76,7 +77,13 @@ def main():
         model_files = {
             'random_forest': 'insurance_model.pkl',
             'decision_tree': 'insurance_model_decision_tree.pkl',
-            'linear_regression': 'insurance_model_linear_regression.pkl'
+            'linear_regression': 'insurance_model_linear_regression.pkl',
+            'gradient_boosting': 'insurance_model_gradient_boosting.pkl',
+            'svr': 'insurance_model_svr.pkl',
+            'knn': 'insurance_model_knn.pkl',
+            'ridge': 'insurance_model_ridge.pkl',
+            'lasso': 'insurance_model_lasso.pkl',
+            'elasticnet': 'insurance_model_elasticnet.pkl'
         }
         
         model_file = model_files.get(selected_model)
@@ -208,6 +215,17 @@ def main():
             sys.exit(1)
         
         features_array = np.array([features])
+        
+        # Handle models that require feature scaling (SVR, KNN)
+        if selected_model in ('svr', 'knn'):
+            # Load the scaler
+            scaler_path = os.path.join(model_dir, 'svr_scaler.pkl')
+            if not os.path.exists(scaler_path):
+                print(f"Error: Scaler file '{scaler_path}' does not exist. Train the model first.", file=sys.stderr)
+                sys.exit(1)
+            scaler = joblib.load(scaler_path)
+            features_array = scaler.transform(features_array)
+        
         prediction = model.predict(features_array)[0]
         
         # Output prediction with model name in JSON format for easier parsing

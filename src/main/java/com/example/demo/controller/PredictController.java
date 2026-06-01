@@ -6,15 +6,51 @@ import com.example.demo.service.MLPredictionService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 public class PredictController {
 
     private final MLPredictionService mlPredictionService;
+    
+    // List of available models
+    private static final List<String> AVAILABLE_MODELS = Arrays.asList(
+        "random_forest",
+        "gradient_boosting",
+        "decision_tree",
+        "linear_regression",
+        "ridge",
+        "lasso",
+        "elasticnet",
+        "svr",
+        "knn"
+    );
+    
+    private static final Map<String, String> MODEL_DESCRIPTIONS = Map.ofEntries(
+        Map.entry("random_forest", "Random Forest - Ensemble method combining multiple decision trees"),
+        Map.entry("gradient_boosting", "Gradient Boosting - Sequential ensemble building on prediction errors"),
+        Map.entry("decision_tree", "Decision Tree - Simple tree-based model"),
+        Map.entry("linear_regression", "Linear Regression - Simple linear model"),
+        Map.entry("ridge", "Ridge Regression - Linear regression with L2 regularization"),
+        Map.entry("lasso", "Lasso Regression - Linear regression with L1 regularization"),
+        Map.entry("elasticnet", "Elastic Net - Linear regression with combined L1/L2 regularization"),
+        Map.entry("svr", "Support Vector Regressor - Non-linear model using support vectors"),
+        Map.entry("knn", "K-Nearest Neighbors - Instance-based learning model")
+    );
 
     public PredictController(MLPredictionService mlPredictionService) {
         this.mlPredictionService = mlPredictionService;
+    }
+
+    @GetMapping("/models")
+    public Map<String, Object> getAvailableModels() {
+        return Map.of(
+            "available_models", AVAILABLE_MODELS,
+            "default_model", "random_forest",
+            "descriptions", MODEL_DESCRIPTIONS
+        );
     }
 
     @PostMapping(value = "/predict", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
