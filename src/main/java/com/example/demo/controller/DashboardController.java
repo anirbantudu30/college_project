@@ -4,6 +4,7 @@ import com.example.demo.dto.HealthProfileDto;
 import com.example.demo.dto.RecommendedDoctorDto;
 import com.example.demo.dto.RecommendedHospitalDto;
 import com.example.demo.entity.User;
+import com.example.demo.entity.pastPredictions;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.HealthProfileService;
 import com.example.demo.service.RecommendationService;
@@ -15,12 +16,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.demo.service.UserService;
+import com.example.demo.repository.PastPredictionsRepository;
 
 import java.util.List;
 
 @Controller
 @RequestMapping("/dashboard")
 public class DashboardController {
+
+    @Autowired
+    private PastPredictionsRepository pastPredictionsRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -49,7 +54,7 @@ public class DashboardController {
         
         // Get recommendations
         List<RecommendedHospitalDto> hospitals = recommendationService.getRecommendedHospitals(user);
-        List<RecommendedDoctorDto> doctors = recommendationService.getRecommendedDoctors(user);
+        List<RecommendedDoctorDto> doctors = recommendationService.getRecommendedDoctors(user); 
         
         model.addAttribute("username", user.getUsername());
         model.addAttribute("recommendedHospitals", hospitals);
@@ -107,6 +112,15 @@ public class DashboardController {
         model.addAttribute("hasConditions", !hospitals.isEmpty() || !doctors.isEmpty());
         
         return "recommendations";
+    }
+
+    @GetMapping("/history")
+    public String predictionHistory(Model model,Authentication authentication) {
+        User user=userService.findByUsername(authentication.getName()).get();
+        List<pastPredictions> pastPredictions = pastPredictionsRepository.findByUserId(user.getId());
+        model.addAttribute("pastPredictions", pastPredictions);
+        return "history";
+
     }
 
     
