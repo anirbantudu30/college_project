@@ -117,10 +117,17 @@ public class PredictController {
 
         // Generate a friendly response with suggestions
         StringBuilder response = new StringBuilder();
+        StringBuilder tempResponse=new StringBuilder();
         response.append("=== Insurance Cost Estimate ===\n");
+        
+        tempResponse.append("=== Insurance Cost Estimate ===\n");
+        
         response.append(String.format("Model Used: %s\n", usedModel.replace("_", " ").toUpperCase()));
         response.append(String.format("Estimated Annual Cost: $%.2f\n\n", predictedCost));
         
+        tempResponse.append("===Total Estimated Annual Cost===\n");
+        tempResponse.append(String.format("Estimated Annual Cost: $%.2f\n\n", predictedCost));
+
         response.append("=== Your Profile ===\n");
         response.append(String.format("Age: %d | BMI: %.1f | Gender: %s\n", req.getAge(), req.getBmi(), req.getGender()));
         response.append(String.format("Smoker: %s | Children: %d | Location: %s\n", 
@@ -169,6 +176,6 @@ public class PredictController {
             response.append("\nNote: Your existing condition(s) may impact the final premium. Please consult with an insurance agent for detailed information.\n");
         }
 
-        return new InsuranceResponse(response.toString(), predictedCost, usedModel);
+        return new InsuranceResponse(tempResponse.toString(), predictedCost, usedModel);
     }
 }
